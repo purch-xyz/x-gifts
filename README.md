@@ -52,9 +52,7 @@ Example Response:
       "reason": "Perfect for their smart home interests",
       "asin": "B08N5WRWNW",
       "productUrl": "https://www.amazon.com/dp/B08N5WRWNW",
-      "x402CheckoutUrl": "https://x-purch-741433844771.us-east1.run.app/orders/solana",
-      "confidence": 0.92,
-      "category": "tech"
+      "x402CheckoutUrl": "https://x-purch-741433844771.us-east1.run.app/orders/solana"
     }
   ],
   "interests": ["photography", "travel", "tech"],
@@ -70,8 +68,6 @@ SUPABASE_DATABASE_URL       # PostgreSQL for caching results
 X402_SOLANA_WALLET_ADDRESS  # Your wallet for receiving payments
 X402_CDP_API_KEY_ID         # Coinbase CDP credentials
 X402_CDP_API_KEY_SECRET
-APIFY_TOKEN                 # For social media scraping
-OPENAI_API_KEY              # For AI recommendations
 ```
 
 ## Why Database?
@@ -81,10 +77,23 @@ We use Supabase/PostgreSQL to cache results for 24 hours. This reduces costs sin
 ## How it Works
 
 1. User provides social media profile URL
-2. Apify scrapes the profile data
-3. OpenAI analyzes interests and suggests gifts
-4. Results are cached and returned with Amazon ASINs
-5. User can purchase via [x-purch](https://github.com/purch-xyz/x-purch)
+2. x-gifts checks cache for instant results
+3. If not cached, calls Purch backend API (~2 minutes):
+   - Purch scrapes profile with Apify and analyzes interests
+   - Finds real Amazon products
+4. Results are cached for 24 hours
+5. Returns products with ASINs for [x-purch](https://github.com/purch-xyz/x-purch) checkout
+
+## Architecture
+
+```
+x-gifts (this service)          Purch Backend
+    │                                │
+    ├─ x402 payments ───────────────►│
+    ├─ Cache layer                   ├─ Apify scraping
+    └─ Purch integration ────────────├─ AI analysis
+                                     └─ Product search
+```
 
 ## License
 

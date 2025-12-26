@@ -16,8 +16,6 @@ export const giftItemSchema = z.object({
   asin: z.string().describe("Amazon Standard Identification Number"),
   productUrl: z.string().url().describe("Direct Amazon product URL"),
   x402CheckoutUrl: z.string().url().describe("x-purch checkout URL for this product"),
-  confidence: z.number().min(0).max(1).describe("Confidence score for this recommendation"),
-  category: z.string(),
 });
 
 export const giftResponseSchema = z.object({

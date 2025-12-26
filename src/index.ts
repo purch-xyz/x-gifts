@@ -94,8 +94,6 @@ app.use(
                   asin: { type: "string", description: "Amazon ASIN" },
                   productUrl: { type: "string", format: "uri", description: "Amazon product URL" },
                   x402CheckoutUrl: { type: "string", format: "uri", description: "x-purch checkout URL" },
-                  confidence: { type: "number" },
-                  category: { type: "string" },
                 },
               },
             },

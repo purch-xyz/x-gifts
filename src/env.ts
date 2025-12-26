@@ -11,10 +11,6 @@ export const env = createEnv({
     X402_CDP_API_KEY_ID: z.string().min(1),
     X402_CDP_API_KEY_SECRET: z.string().min(1),
 
-    // External APIs
-    APIFY_TOKEN: z.string().min(1),
-    OPENAI_API_KEY: z.string().min(1),
-
     // Environment
     NODE_ENV: z.enum(["development", "test", "production"]).default("production"),
   },
