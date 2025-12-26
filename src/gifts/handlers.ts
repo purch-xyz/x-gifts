@@ -98,9 +98,74 @@ export async function getGiftSuggestionsHandler(
 }
 
 export async function getTrendingGiftsHandler(c: Context) {
-  // TODO: Implement trending analysis
-  return c.json({
-    success: true,
-    message: "Trending endpoint coming soon",
-  }, 501);
+  try {
+    // Query database for most frequently appearing gifts in last 7 days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const recentSearches = await db
+      .select()
+      .from(giftSearches)
+      .where(
+        and(
+          giftSearches.createdAt > sevenDaysAgo
+        )
+      )
+      .limit(100);
+
+    // Count gift occurrences
+    const giftCounts = new Map<string, { gift: any; count: number }>();
+
+    for (const search of recentSearches) {
+      const gifts = search.gifts as any[];
+      for (const gift of gifts) {
+        const key = gift.asin;
+        if (giftCounts.has(key)) {
+          giftCounts.get(key)!.count++;
+        } else {
+          giftCounts.set(key, { gift, count: 1 });
+        }
+      }
+    }
+
+    // Sort by popularity and get top 10
+    const trending = Array.from(giftCounts.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+      .map(item => ({
+        ...item.gift,
+        trendingScore: item.count,
+      }));
+
+    // Get popular interests
+    const interestCounts = new Map<string, number>();
+    for (const search of recentSearches) {
+      const interests = (search.profileData as any).interests || [];
+      for (const interest of interests) {
+        interestCounts.set(interest, (interestCounts.get(interest) || 0) + 1);
+      }
+    }
+
+    const popularInterests = Array.from(interestCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([interest]) => interest);
+
+    return c.json({
+      success: true,
+      trending: {
+        gifts: trending,
+        interests: popularInterests,
+        period: "7_days",
+        sampleSize: recentSearches.length,
+      },
+      cached: false,
+    }, 200);
+
+  } catch (error) {
+    console.error("[Trending] Error fetching trending data:", error);
+    return c.json({
+      success: false,
+      error: "Failed to fetch trending data",
+    }, 500);
+  }
 }

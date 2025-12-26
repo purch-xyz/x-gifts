@@ -117,12 +117,50 @@ app.post(
   }
 );
 
-// Trending gifts endpoint (lower price for cached data)
-app.get(
+// x402 payment middleware for trending endpoint
+app.use(
   "/gifts/trending",
-  // TODO: Add x402 middleware with $0.02 pricing
-  getTrendingGiftsHandler
+  paymentMiddleware(
+    env.X402_SOLANA_WALLET_ADDRESS as SolanaAddress,
+    {
+      "GET /gifts/trending": {
+        price: "$0.02", // Cheaper since it's aggregated/cached data
+        network: "solana",
+        config: {
+          resource: "https://x-gifts.purch.xyz/gifts/trending",
+          maxTimeoutSeconds: 30,
+          mimeType: "application/json",
+          description: "Get trending gifts and popular interests from recent searches",
+          discoverable: true,
+          outputSchema: {
+            success: { type: "boolean" },
+            trending: {
+              type: "object",
+              properties: {
+                gifts: {
+                  type: "array",
+                  items: { type: "object" },
+                  description: "Most frequently recommended gifts"
+                },
+                interests: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Most common interests"
+                },
+                period: { type: "string" },
+                sampleSize: { type: "number" },
+              },
+            },
+          },
+        },
+      },
+    },
+    facilitatorConfig,
+  ),
 );
+
+// Trending gifts endpoint
+app.get("/gifts/trending", getTrendingGiftsHandler);
 
 // Root endpoint - API information
 app.get("/", (c) => {
@@ -138,7 +176,7 @@ app.get("/", (c) => {
       {
         path: "GET /gifts/trending",
         price: "$0.02 USDC",
-        status: "coming_soon",
+        description: "Get trending gifts from recent searches",
       },
     ],
   });
