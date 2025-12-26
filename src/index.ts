@@ -146,6 +146,13 @@ app.get("/", (c) => {
 
 // Start server
 const port = process.env.PORT || 3000;
-console.log(`🎁 x-gifts server starting on port ${port}`);
+
+if (import.meta.main) {
+  console.log(`🎁 x-gifts server starting on port ${port}`);
+  Bun.serve({
+    port,
+    fetch: app.fetch,
+  });
+}
 
 export default app;
