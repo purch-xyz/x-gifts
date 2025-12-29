@@ -11,6 +11,10 @@ export const env = createEnv({
     X402_CDP_API_KEY_ID: z.string().min(1),
     X402_CDP_API_KEY_SECRET: z.string().min(1),
 
+    // Purch Backend Integration
+    PURCH_API_URL: z.string().url().default("https://api.purch.xyz/api/gifts"),
+    PURCH_INTERNAL_API_KEY: z.string().min(32),
+
     // Environment
     NODE_ENV: z.enum(["development", "test", "production"]).default("production"),
   },

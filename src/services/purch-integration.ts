@@ -1,6 +1,6 @@
+import { env } from "../env";
 import type { Platform } from "../gifts/schemas";
 
-const PURCH_API_URL = "https://api.purch.xyz/api/gifts";
 const X_PURCH_CHECKOUT = "https://x-purch-741433844771.us-east1.run.app/orders/solana";
 
 /**
@@ -62,11 +62,11 @@ export async function getPurchGiftSuggestions(
   const timeout = setTimeout(() => controller.abort(), 240000); // 4 minutes
 
   try {
-    const response = await fetch(PURCH_API_URL, {
+    const response = await fetch(env.PURCH_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Note: Purch backend has its own authentication
+        "X-Internal-Key": env.PURCH_INTERNAL_API_KEY,
       },
       body: JSON.stringify({
         profileUrl,
